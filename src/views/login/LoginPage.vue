@@ -82,116 +82,120 @@ watch(isRegister, () => {
 </script>
 
 <template>
-  <el-row class="login-page">
-    <el-col :span="6" :offset="9" class="form">
-      <el-form
-        :model="formModel"
-        :rules="rules"
-        ref="form"
-        size="large"
-        autocomplete="off"
-        v-if="isRegister"
-      >
-        <el-form-item>
-          <h1>Register</h1>
-        </el-form-item>
-        <el-form-item prop="username">
-          <el-input
-            v-model="formModel.username"
-            :prefix-icon="User"
-            placeholder="Please input username"
-          ></el-input>
-        </el-form-item>
-        <el-form-item prop="password">
-          <el-input
-            v-model="formModel.password"
-            :prefix-icon="Lock"
-            type="password"
-            placeholder="Please input password"
-          ></el-input>
-        </el-form-item>
-        <el-form-item prop="repassword">
-          <el-input
-            v-model="formModel.repassword"
-            :prefix-icon="Lock"
-            type="password"
-            placeholder="Please input password again"
-          ></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            @click="register"
-            class="button"
-            type="primary"
-            auto-insert-space
-          >
-            Register
-          </el-button>
-        </el-form-item>
-        <el-form-item class="flex">
-          <el-link type="info" :underline="false" @click="isRegister = false">
-            ← Back
-          </el-link>
-        </el-form-item>
-      </el-form>
-      <el-form
-        :model="formModel"
-        :rules="rules"
-        ref="form"
-        size="large"
-        autocomplete="off"
-        v-else
-      >
-        <el-form-item>
-          <h1>Sign in</h1>
-        </el-form-item>
-        <el-form-item prop="username">
-          <el-input
-            v-model="formModel.username"
-            :prefix-icon="User"
-            placeholder="Please input username"
-          ></el-input>
-        </el-form-item>
-        <el-form-item prop="password">
-          <el-input
-            v-model="formModel.password"
-            name="password"
-            :prefix-icon="Lock"
-            type="password"
-            placeholder="Please input password"
-          ></el-input>
-        </el-form-item>
-        <el-form-item class="flex">
-          <div class="flex">
-            <el-checkbox>Remember me</el-checkbox>
-            <el-link type="primary" :underline="false"
-              >Forget password?</el-link
+  <div class="login-page">
+    <div class="card-wrapper">
+      <el-card class="glass-effect" style="width: 90%; max-width: 400px">
+        <el-form
+          class="form-style"
+          :model="formModel"
+          :rules="rules"
+          ref="form"
+          size="large"
+          autocomplete="off"
+          v-if="isRegister"
+        >
+          <el-form-item>
+            <h1>Register</h1>
+          </el-form-item>
+          <el-form-item prop="username">
+            <el-input
+              v-model="formModel.username"
+              :prefix-icon="User"
+              placeholder="Please input username"
+              style="width: 100%"
+            ></el-input>
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input
+              v-model="formModel.password"
+              :prefix-icon="Lock"
+              type="password"
+              placeholder="Please input password"
+            ></el-input>
+          </el-form-item>
+          <el-form-item prop="repassword">
+            <el-input
+              v-model="formModel.repassword"
+              :prefix-icon="Lock"
+              type="password"
+              placeholder="Please input password again"
+            ></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              @click="register"
+              class="button"
+              type="primary"
+              auto-insert-space
             >
-          </div>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            @click="login"
-            class="button"
-            type="primary"
-            auto-insert-space
-            >Sign in</el-button
-          >
-        </el-form-item>
-        <el-form-item class="flex">
-          <el-link type="info" :underline="false" @click="isRegister = true">
-            Register →
-          </el-link>
-        </el-form-item>
-      </el-form>
-    </el-col>
-  </el-row>
+              Register
+            </el-button>
+          </el-form-item>
+          <el-form-item class="flex">
+            <el-link type="info" :underline="false" @click="isRegister = false">
+              ← Back
+            </el-link>
+          </el-form-item>
+        </el-form>
+        <el-form
+          :model="formModel"
+          :rules="rules"
+          ref="form"
+          size="large"
+          autocomplete="off"
+          class="form-style"
+          v-else
+        >
+          <el-form-item>
+            <h1>Sign in</h1>
+          </el-form-item>
+          <el-form-item prop="username">
+            <el-input
+              v-model="formModel.username"
+              :prefix-icon="User"
+              placeholder="Please input username"
+            ></el-input>
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input
+              v-model="formModel.password"
+              name="password"
+              :prefix-icon="Lock"
+              type="password"
+              placeholder="Please input password"
+            ></el-input>
+          </el-form-item>
+          <el-form-item>
+            <div class="flex">
+              <el-checkbox>Remember me</el-checkbox>
+              <el-link type="primary" :underline="false"
+                >Forget password?</el-link
+              >
+            </div>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              @click="login"
+              class="button"
+              type="primary"
+              auto-insert-space
+              >Sign in</el-button
+            >
+          </el-form-item>
+          <el-form-item class="flex">
+            <el-link type="info" :underline="false" @click="isRegister = true">
+              Register →
+            </el-link>
+          </el-form-item>
+        </el-form>
+      </el-card>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
 .login-page {
   height: 100vh;
-
   background: url('@/assets/login_bg.jpg') no-repeat center / cover;
   .form {
     display: flex;
@@ -204,11 +208,30 @@ watch(isRegister, () => {
     .button {
       width: 100%;
     }
-    .flex {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-    }
   }
+}
+
+.card-wrapper {
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  height: 100vh; /* 视口高度，方便测试垂直居中 */
+}
+
+.glass-effect {
+  background-color: rgba(255, 255, 255, 0.7); /* 半透明白 */
+  backdrop-filter: blur(10px);
+}
+
+.form-style {
+  width: 80%;
+  margin: 0 auto;
+}
+
+.flex {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* 垂直居中 */
 }
 </style>
