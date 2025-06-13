@@ -213,13 +213,13 @@ watch(isRegister, () => {
 
 .card-wrapper {
   display: flex;
-  justify-content: center; /* 水平居中 */
-  align-items: center; /* 垂直居中 */
-  height: 100vh; /* 视口高度，方便测试垂直居中 */
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
 .glass-effect {
-  background-color: rgba(255, 255, 255, 0.7); /* 半透明白 */
+  background-color: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
 }
 
@@ -232,6 +232,6 @@ watch(isRegister, () => {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: center; /* 垂直居中 */
+  align-items: center;
 }
 </style>
