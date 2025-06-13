@@ -7,10 +7,31 @@ const router = createRouter({
     {
       path: '/',
       component: () => import('@/views/layout/LayoutContainer.vue'),
-      redirect: '',
-      children: []
+      redirect: '/myassets/manage',
+      children: [
+        {
+          path: '/myassets/manage',
+          component: () => import('@/views/myassets/AssetsManage.vue')
+        },
+        {
+          path: '/user/profile',
+          component: () => import('@/views/user/UserProfile.vue')
+        }
+      ]
     }
   ]
 })
+
+/*
+Navigation Guards, enable when deploying
+1. undefined /true allow
+2. false return to from
+3. based on path redirecting it
+*/
+
+// router.beforeEach((to) => {
+//   const userstore = useUserStore()
+//   if (!userstore.token && to.path !== '/login') return '/login'
+// })
 
 export default router
