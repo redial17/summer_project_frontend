@@ -85,6 +85,7 @@ watch(isRegister, () => {
   <div class="login-page">
     <div class="card-wrapper">
       <el-card class="glass-effect" style="width: 90%; max-width: 400px">
+        <!-- Register form -->
         <el-form
           class="form-style"
           :model="formModel"
@@ -137,6 +138,7 @@ watch(isRegister, () => {
             </el-link>
           </el-form-item>
         </el-form>
+        <!-- Sign in form -->
         <el-form
           :model="formModel"
           :rules="rules"
