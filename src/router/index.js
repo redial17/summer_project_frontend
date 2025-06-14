@@ -10,15 +10,15 @@ const router = createRouter({
       redirect: '/myassets/manage',
       children: [
         {
-          path: '/myassets/manage',
+          path: 'myassets/manage',
           component: () => import('@/views/myassets/AssetsManage.vue')
         },
         {
-          path: '/user/profile',
+          path: 'user/profile',
           component: () => import('@/views/user/UserProfile.vue')
         },
         {
-          path: '/asset/:id',
+          path: 'asset/:id',
           component: () => import('@/views/assetdetail/index.vue')
         }
       ]

@@ -198,7 +198,7 @@ watch(isRegister, () => {
 <style lang="scss" scoped>
 .login-page {
   height: 100vh;
-  background: url('@/assets/login_bg.jpg') no-repeat center / cover;
+  background: url('@/assets/login_bg.png') no-repeat center / cover;
   .form {
     display: flex;
     flex-direction: column;
