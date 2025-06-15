@@ -45,7 +45,7 @@ const rules = {
     {
       validator: (rule, value, callback) => {
         if (value !== formModel.value.password) {
-          callback(new Error('Those passwords didn’t match. Try again.'))
+          callback(new Error("Those passwords didn't match. Try again."))
         } else {
           callback()
         }
@@ -67,6 +67,7 @@ const router = useRouter()
 const login = async () => {
   await form.value.validate()
   const res = await userLoginService(formModel.value)
+  console.log(res)
   userStore.setToken(res.data.token)
   ElMessage.success('success')
   router.push('/')
