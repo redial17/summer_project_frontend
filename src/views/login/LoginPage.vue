@@ -91,7 +91,7 @@ watch(isRegister, () => {
           size="large"
           autocomplete="off"
           class="form-style"
-          v-if="isRegister"
+          v-if="!isRegister"
         >
           <el-form-item>
             <h1>Sign in</h1>
