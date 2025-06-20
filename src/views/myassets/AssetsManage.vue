@@ -1,12 +1,13 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useAssetsStore } from '@/stores/modules/assets'
-// import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useRouter } from 'vue-router'
 import { ref, watch, computed } from 'vue'
-
+import { useUserStore, useAdminStore } from '@/stores'
 const assetsStore = useAssetsStore()
+const userStore = useUserStore()
+const adminStore = useAdminStore()
 const router = useRouter()
 
 // filter value
@@ -81,35 +82,47 @@ const currentPageAssets = computed(() => {
   const end = start + pageSize
   return currentAssets.value.slice(start, end)
 })
-onMounted(() => {
-  assetsStore.getAssets()
+
+onMounted(async () => {
+  currentAssets.value = []
+  let id
+  if (!userStore.user.isAdmin) {
+    id = userStore.user.user.assetHolderId
+  } else {
+    id = adminStore.proxyId
+  }
+  await assetsStore.getAssets(id)
   currentAssets.value = assetsStore.assets
-
-  currentAssets.value = [
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-  ]
 })
 
-watch([assetName, assetWarningLevel, assetRegion], () => {
-  currentAssets.value = assetsStore.assets.filter((item) => {
-    const matchName = assetName.value
-      ? item.name?.includes(assetName.value)
-      : true
-    const matchLevel = assetWarningLevel.value
-      ? item.warningLevel === assetWarningLevel.value
-      : true
-    const matchRegion = assetRegion.value
-      ? item.region === assetRegion.value
-      : true
-    return matchName && matchLevel && matchRegion
-  })
-  currentPage.value = 1
-})
+watch(
+  [assetName, assetWarningLevel, assetRegion],
+  async () => {
+    currentAssets.value = assetsStore.assets.filter((item) => {
+      const matchName = assetName.value
+        ? item.asset.name?.toLowerCase().includes(assetName.value.toLowerCase())
+        : true
+      const matchLevel = assetWarningLevel.value
+        ? assetWarningLevel.value
+            .toLowerCase()
+            .includes(item.warnings[0]?.warningLevel?.toLowerCase() || '')
+        : true
+      const matchRegion = assetRegion.value
+        ? item.asset.region === assetRegion.value
+        : true
+      return matchName && matchLevel && matchRegion
+    })
+    currentPage.value = 1
+  },
+  {
+    immediate: true
+  }
+)
 </script>
 
 <template>
   <!-- assets filter -->
-  <div>
+  <div style="margin-bottom: 10px">
     <el-input v-model="assetName" style="width: 240px"></el-input>
     <el-select
       v-model="assetWarningLevel"
@@ -144,27 +157,30 @@ watch([assetName, assetWarningLevel, assetRegion], () => {
   <div class="assets-container">
     <div class="card-grid">
       <el-card
-        v-for="(asset, index) in currentPageAssets"
-        :key="asset.id"
+        v-for="(item, index) in currentPageAssets"
+        :key="item.asset.id"
         class="asset-card"
         shadow="hover"
       >
         <template #header>
           <div class="card-header">
-            <h3 class="asset-title">{{ asset.name || 'Asset Name' }}</h3>
-            <span class="asset-id">ID: {{ asset.id }}</span>
+            <h3 class="asset-title">{{ item.asset.name || 'Asset Name' }}</h3>
+            <span class="asset-id">ID: {{ item.asset.id }}</span>
           </div>
         </template>
 
         <div class="map-container">
-          <div :id="'map-' + index" class="map"></div>
+          <MapCard
+            :map-id="'map-' + index"
+            :drain-area="item.asset.drainArea"
+          />
         </div>
 
         <template #footer>
           <div class="card-footer">
             <el-button
               type="primary"
-              @click="router.push(`/asset/${asset.id}`)"
+              @click="router.push(`/asset/${item.asset.id}`)"
               class="view-details-btn"
             >
               Show Detail
