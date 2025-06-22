@@ -146,12 +146,12 @@ watch(
       flex-wrap: wrap;
     "
   >
-    <el-input v-model="assetName" style="width: 240px"></el-input>
+    <el-input v-model="assetName" class="select-style"></el-input>
     <el-select
       v-model="assetWarningLevel"
       placeholder="Select warning level"
       size="large"
-      style="width: 240px"
+      class="select-style"
     >
       <el-option
         v-for="item in warningLevelOptions"
@@ -165,7 +165,7 @@ watch(
       v-model="assetRegion"
       placeholder="Select Region"
       size="large"
-      style="width: 240px"
+      class="select-style"
     >
       <el-option
         v-for="item in warningRegion"
@@ -224,6 +224,8 @@ watch(
         justify-content: center;
         text-align: center;
         margin-top: 20px;
+        position: relative;
+        z-index: 2000;
       "
     />
   </div>
@@ -319,6 +321,10 @@ watch(
   box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
 }
 
+.select-style {
+  width: 240px;
+}
+
 @media (max-width: 768px) {
   .assets-container {
     padding: 12px;
@@ -332,6 +338,9 @@ watch(
 @media (max-width: 480px) {
   .card-grid {
     justify-content: flex-start;
+  }
+  .select-style {
+    width: 100px;
   }
 }
 
