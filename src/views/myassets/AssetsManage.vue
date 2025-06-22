@@ -84,11 +84,11 @@ const currentPageAssets = computed(() => {
   // set indicator color
   arr.forEach((item) => {
     if (item.warnings[0]?.warningLevel.toLowerCase().includes('red')) {
-      item.status = 'warning'
+      item.status = 'error'
     } else if (
       item.warnings[0]?.warningLevel.toLowerCase().includes('yellow')
     ) {
-      item.status = 'error'
+      item.status = 'warning'
     } else {
       item.status = 'success'
     }
@@ -284,15 +284,6 @@ watch(
   max-width: 100%;
   line-height: 1.2;
   height: 1.2em;
-}
-
-.asset-id {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: #4caf50;
-  box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
-  border: 1px solid #c8e6c9;
 }
 
 .map-container {
