@@ -80,6 +80,8 @@ const currentPageAssets = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   const end = start + pageSize
   const arr = currentAssets.value.slice(start, end)
+
+  // set indicator color
   arr.forEach((item) => {
     if (item.warnings[0]?.warningLevel.toLowerCase().includes('red')) {
       item.status = 'warning'
@@ -138,10 +140,10 @@ watch(
   <div
     style="
       display: flex;
-      justify-content: center; /* 居中对齐 */
-      gap: 10px; /* 控件间间距（可选） */
+      justify-content: center;
+      gap: 10px;
       margin-bottom: 10px;
-      flex-wrap: wrap; /* 小屏时自动换行 */
+      flex-wrap: wrap;
     "
   >
     <el-input v-model="assetName" style="width: 240px"></el-input>
@@ -239,8 +241,7 @@ watch(
   flex-wrap: wrap;
   gap: 20px;
 
-  /* ✅ 限制容器宽度，并居中 */
-  max-width: calc(300px * 4 + 20px * 3); /* 卡片宽度 x 列数 + 间距 */
+  max-width: calc(300px * 4 + 20px * 3);
   margin-left: auto;
   margin-right: auto;
 
@@ -271,17 +272,18 @@ watch(
 }
 
 .asset-title {
+  /* hide overflow text*/
   font-size: 18px;
   font-weight: 600;
   color: #2c3e50;
   margin: 0;
 
-  white-space: nowrap; /* 不换行 */
-  overflow: hidden; /* 超出隐藏 */
-  text-overflow: ellipsis; /* 超出显示 ... */
-  max-width: 100%; /* 防止撑出父容器 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
   line-height: 1.2;
-  height: 1.2em; /* 高度 = 行高，保证一行 */
+  height: 1.2em;
 }
 
 .asset-id {

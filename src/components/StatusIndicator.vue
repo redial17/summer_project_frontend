@@ -8,7 +8,7 @@ import { computed } from 'vue'
 const props = defineProps({
   status: {
     type: String,
-    default: 'off' // 可选值：success, warning, error, off
+    default: 'off' // possible value：success, warning, error, off
   }
 })
 
@@ -25,28 +25,24 @@ const statusClass = computed(() => {
   border: 1px solid #ccc;
 }
 
-/* 绿色 - 正常 */
 .indicator--success {
   background-color: #4caf50;
   box-shadow: 0 0 4px rgba(76, 175, 80, 0.4);
   border-color: #c8e6c9;
 }
 
-/* 黄色 - 警告 */
 .indicator--warning {
   background-color: #ff9800;
   box-shadow: 0 0 4px rgba(255, 152, 0, 0.4);
   border-color: #ffe0b2;
 }
 
-/* 红色 - 错误 */
 .indicator--error {
   background-color: #f44336;
   box-shadow: 0 0 4px rgba(244, 67, 54, 0.4);
   border-color: #ffcdd2;
 }
 
-/* 灰色 - 关闭状态 */
 .indicator--off {
   background-color: #bdbdbd;
   box-shadow: none;
