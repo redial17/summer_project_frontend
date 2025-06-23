@@ -1,12 +1,10 @@
 <script setup>
 import { onMounted } from 'vue'
-import { useAssetsStore } from '@/stores/modules/assets'
 import { useRouter } from 'vue-router'
 import { ref, watch, computed } from 'vue'
-import { useUserStore, useAdminStore } from '@/stores'
+import { useUserStore, useAssetsStore } from '@/stores'
 const assetsStore = useAssetsStore()
 const userStore = useUserStore()
-const adminStore = useAdminStore()
 const router = useRouter()
 
 // filter value
@@ -76,6 +74,7 @@ const handlePageChange = (page) => {
   currentPage.value = page
 }
 
+const addAssetVisible = ref(false)
 const currentPageAssets = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   const end = start + pageSize
@@ -103,17 +102,18 @@ onMounted(async () => {
   if (!userStore.user.isAdmin) {
     id = userStore.user.user.assetHolderId
   } else {
-    id = adminStore.proxyId
+    id = userStore.proxyId
   }
-  await assetsStore.getAssets(id)
-  currentAssets.value = assetsStore.assets
+  console.log(id)
+  await assetsStore.getUserAssets(id)
+  currentAssets.value = assetsStore.userAssets
 })
 
 // watch filter condition
 watch(
   [assetName, assetWarningLevel, assetRegion],
   async () => {
-    currentAssets.value = assetsStore.assets.filter((item) => {
+    currentAssets.value = assetsStore.userAssets.filter((item) => {
       const matchName = assetName.value
         ? item.asset.name?.toLowerCase().includes(assetName.value.toLowerCase())
         : true
@@ -174,6 +174,8 @@ watch(
         :value="item.value"
       ></el-option>
     </el-select>
+
+    <el-button @click="addAssetVisible = true"> Add asset </el-button>
   </div>
 
   <!-- cards for assets -->
@@ -228,6 +230,9 @@ watch(
         z-index: 2000;
       "
     />
+    <el-dialog v-model="addAssetVisible" title="Add new asset" width="500">
+      <AddAsset v-model:add-asset-visible="addAssetVisible"></AddAsset>
+    </el-dialog>
   </div>
 </template>
 
