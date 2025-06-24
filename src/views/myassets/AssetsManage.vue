@@ -99,8 +99,8 @@ const currentPageAssets = computed(() => {
 onMounted(async () => {
   currentAssets.value = []
   let id
-  if (!userStore.user.isAdmin) {
-    id = userStore.user.user.assetHolderId
+  if (!userStore.user.admin) {
+    id = userStore.user.assetHolderId
   } else {
     id = userStore.proxyId
   }
@@ -197,7 +197,7 @@ watch(
         <div class="map-container">
           <MapCard
             :map-id="'map-' + index"
-            :drain-area="[item.asset.drainArea]"
+            :drain-area="[item.asset.location]"
           />
         </div>
 
@@ -230,9 +230,7 @@ watch(
         z-index: 2000;
       "
     />
-    <el-dialog v-model="addAssetVisible" title="Add new asset" width="500">
-      <AddAsset v-model:add-asset-visible="addAssetVisible"></AddAsset>
-    </el-dialog>
+    <AddAsset v-model:visible="addAssetVisible"></AddAsset>
   </div>
 </template>
 

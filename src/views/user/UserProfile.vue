@@ -11,10 +11,10 @@ const form = ref({
   lastName: arr[1],
   email: assetHolder.email,
   address: {
-    street: '',
-    postCode: '',
-    city: '',
-    country: ''
+    street: assetHolder.address.street,
+    postCode: assetHolder.address.postcode,
+    city: assetHolder.address.city,
+    country: assetHolder.address.country
   }
 })
 </script>

@@ -15,11 +15,12 @@ const handleShowDetail = async (row) => {
 }
 onMounted(async () => {
   const res = await adminGetUsersService()
-  users.value = res.data.data.map((item) => ({
-    uid: item.user.id,
-    username: item.user.username,
-    assetHolderId: item.user.assetHolderId,
-    assets: item.assetCount
+  console.log(res)
+  users.value = res.data.map((item) => ({
+    uid: item.id,
+    username: item.id,
+    assetHolderId: item.assetHolderId,
+    assets: item.id
   }))
 })
 </script>

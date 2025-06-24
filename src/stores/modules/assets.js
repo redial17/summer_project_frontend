@@ -11,12 +11,12 @@ export const useAssetsStore = defineStore(
 
     const getUserAssets = async (id) => {
       const res = await assetsGetInfoService(id)
-      userAssets.value = res.data.data
+      userAssets.value = res.data
     }
 
     const getAllAssets = async () => {
       const res = await adminGetAssetsService()
-      allAssets.value = res.data.data
+      allAssets.value = res.data
     }
 
     const reset = () => {
