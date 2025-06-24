@@ -70,8 +70,7 @@ const mapCardRef = ref()
 const searchLocation = async (address) => {
   if (!address) return
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
-  const res = await request(url)
-  const data = res.data
+  const data = await request(url)
   if (data.length > 0) {
     form.drainArea = convertToGeoJSON(data[0], 'polygon')
     console.log(form.drainArea)
@@ -154,7 +153,6 @@ function submit() {
                 :label="item.label"
                 :value="item.value"
               />
-              <el-option label="type B" value="B" />
             </el-select>
           </el-form-item>
         </el-form>

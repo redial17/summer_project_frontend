@@ -21,6 +21,7 @@ export const useAssetsStore = defineStore(
 
     const reset = () => {
       userAssets.value = []
+      allAssets.value = []
     }
     return { userAssets, getUserAssets, reset, allAssets, getAllAssets }
   },

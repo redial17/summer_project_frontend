@@ -19,7 +19,7 @@ onMounted(async () => {
   users.value = res.data.map((item) => ({
     uid: item.id,
     username: item.id,
-    assetHolderId: item.assetHolderId,
+    assetHolderId: item.assetHolderId || 'none',
     assets: item.id
   }))
 })
@@ -39,6 +39,7 @@ onMounted(async () => {
     <el-table-column label="Actions">
       <template #default="scope">
         <el-button
+          :disabled="scope.row.uid === 'admin'"
           text
           type="primary"
           size="small"

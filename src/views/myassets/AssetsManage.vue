@@ -18,10 +18,6 @@ const currentAssets = ref([])
 //select value
 const warningLevelOptions = [
   {
-    value: '',
-    label: 'Select warning level'
-  },
-  {
     value: 'No Warning',
     label: 'No Warning'
   },
@@ -39,10 +35,6 @@ const warningLevelOptions = [
   }
 ]
 const warningRegion = [
-  {
-    value: '',
-    label: 'Select Region'
-  },
   { value: 'North East England', label: 'North East England' },
   { value: 'North West England', label: 'North West England' },
   { value: 'Yorkshire & Humber', label: 'Yorkshire & Humber' },
@@ -118,9 +110,11 @@ watch(
         ? item.asset.name?.toLowerCase().includes(assetName.value.toLowerCase())
         : true
       const matchLevel = assetWarningLevel.value
-        ? assetWarningLevel.value
+        ? item.warnings.length > 0 &&
+          item.warnings[0].warningLevel &&
+          assetWarningLevel.value
             .toLowerCase()
-            .includes(item.warnings[0]?.warningLevel?.toLowerCase() || '')
+            .includes(item.warnings[0].warningLevel.toLowerCase())
         : true
       const matchRegion = assetRegion.value
         ? item.asset.region === assetRegion.value
@@ -151,6 +145,7 @@ watch(
       v-model="assetWarningLevel"
       placeholder="Select warning level"
       size="large"
+      clearable
       class="select-style"
     >
       <el-option
@@ -165,6 +160,7 @@ watch(
       v-model="assetRegion"
       placeholder="Select Region"
       size="large"
+      clearable
       class="select-style"
     >
       <el-option
@@ -180,6 +176,7 @@ watch(
 
   <!-- cards for assets -->
   <div class="assets-container">
+    <h3 v-if="assetsStore.userAssets.length === 0">You don't have any asset</h3>
     <div class="card-grid">
       <el-card
         v-for="(item, index) in currentPageAssets"

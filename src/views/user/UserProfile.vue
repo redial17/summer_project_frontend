@@ -10,6 +10,7 @@ const form = ref({
   firstName: arr[0],
   lastName: arr[1],
   email: assetHolder.email,
+  phone: assetHolder.phone,
   address: {
     street: assetHolder.address.street,
     postCode: assetHolder.address.postcode,
@@ -50,6 +51,11 @@ const form = ref({
       <!-- email -->
       <el-form-item label="EMAIL ADDRESS">
         <el-input v-model="form.email" />
+      </el-form-item>
+
+      <!-- phone -->
+      <el-form-item label="PHONE">
+        <el-input v-model="form.phone" />
       </el-form-item>
 
       <!-- address -->
