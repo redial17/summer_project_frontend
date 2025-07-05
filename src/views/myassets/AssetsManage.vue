@@ -2,63 +2,48 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ref, watch, computed } from 'vue'
-import { useUserStore, useAssetsStore } from '@/stores'
-const assetsStore = useAssetsStore()
+import { useUserStore, useAssetStore } from '@/stores'
+const assetStore = useAssetStore()
 const userStore = useUserStore()
 const router = useRouter()
 
 // filter value
 const assetName = ref('')
 const assetWarningLevel = ref('')
-const assetRegion = ref('')
+const assetType = ref('')
 
 // filtered assets
 const currentAssets = ref([])
 
-//select value
+// select value
 const warningLevelOptions = [
   {
-    value: 'No Warning',
+    value: 'No',
     label: 'No Warning'
   },
   {
-    value: 'Yellow Warning',
+    value: 'YELLOW',
     label: 'Yellow Warning'
   },
   {
-    value: 'Amber Warning',
+    value: 'AMBER',
     label: 'Amber Warning'
   },
   {
-    value: 'Red Warning',
+    value: 'RED',
     label: 'Red Warning'
   }
 ]
-const warningRegion = [
-  { value: 'North East England', label: 'North East England' },
-  { value: 'North West England', label: 'North West England' },
-  { value: 'Yorkshire & Humber', label: 'Yorkshire & Humber' },
-  { value: 'East Midlands', label: 'East Midlands' },
-  { value: 'West Midlands', label: 'West Midlands' },
-  { value: 'East of England', label: 'East of England' },
-  {
-    value: 'London & South East England',
-    label: 'London & South East England'
-  },
-  { value: 'South West England', label: 'South West England' },
-  { value: 'Orkney & Shetland', label: 'Orkney & Shetland' },
-  { value: 'Highlands & Eilean Siar', label: 'Highlands & Eilean Siar' },
-  { value: 'Grampian', label: 'Grampian' },
-  { value: 'Central, Tayside & Fife', label: 'Central, Tayside & Fife' },
-  { value: 'Strathclyde', label: 'Strathclyde' },
-  {
-    value: 'Dumfries, Galloway, Lothian & Borders',
-    label: 'Dumfries, Galloway, Lothian & Borders'
-  },
-  { value: 'Northern Ireland', label: 'Northern Ireland' },
-  { value: 'Wales', label: 'Wales' }
-]
 
+const assetTypeOptions = [
+  { value: 'type_001', label: 'Water Tank' },
+  { value: 'type_002', label: 'Soakaway' },
+  { value: 'type_003', label: 'Green Roof' },
+  { value: 'type_004', label: 'Permeable Pavement' },
+  { value: 'type_005', label: 'Swale' },
+  { value: 'type_006', label: 'Retention Pond' },
+  { value: 'type_007', label: 'Rain Garden' }
+]
 // page change
 const currentPage = ref(1)
 const pageSize = 8
@@ -68,6 +53,7 @@ const handlePageChange = (page) => {
 
 const addAssetVisible = ref(false)
 const currentPageAssets = computed(() => {
+  if (!currentAssets.value || currentAssets.value.length === 0) return
   const start = (currentPage.value - 1) * pageSize
   const end = start + pageSize
   const arr = currentAssets.value.slice(start, end)
@@ -75,11 +61,13 @@ const currentPageAssets = computed(() => {
   // set indicator color
   arr.forEach((item) => {
     if (item.warnings[0]?.warningLevel.toLowerCase().includes('red')) {
-      item.status = 'error'
+      item.status = 'red'
+    } else if (item.warnings[0]?.warningLevel.toLowerCase().includes('amber')) {
+      item.status = 'amber'
     } else if (
       item.warnings[0]?.warningLevel.toLowerCase().includes('yellow')
     ) {
-      item.status = 'warning'
+      item.status = 'yellow'
     } else {
       item.status = 'success'
     }
@@ -96,30 +84,42 @@ onMounted(async () => {
   } else {
     id = userStore.proxyId
   }
-  console.log(id)
-  await assetsStore.getUserAssets(id)
-  currentAssets.value = assetsStore.userAssets
+  await assetStore.getUserAssets(userStore.user.admin, id)
+  if (assetStore.userAssets) {
+    currentAssets.value = assetStore.userAssets
+  }
 })
 
 // watch filter condition
 watch(
-  [assetName, assetWarningLevel, assetRegion],
+  [assetName, assetWarningLevel, assetType],
   async () => {
-    currentAssets.value = assetsStore.userAssets.filter((item) => {
+    if (!assetStore.userAssets || assetStore.userAssets.length === 0) return
+    currentAssets.value = assetStore.userAssets.filter((item) => {
+      let matchLevel = false
+      if (
+        assetWarningLevel.value &&
+        item.warnings[0] &&
+        item.warnings[0].warningLevel &&
+        item.warnings[0].warningLevel === assetWarningLevel.value
+      ) {
+        matchLevel = true
+      } else if (
+        assetWarningLevel.value &&
+        assetWarningLevel.value.includes('No') &&
+        !item.warnings[0]
+      ) {
+        matchLevel = true
+      } else if (!assetWarningLevel.value) {
+        matchLevel = true
+      }
       const matchName = assetName.value
         ? item.asset.name?.toLowerCase().includes(assetName.value.toLowerCase())
         : true
-      const matchLevel = assetWarningLevel.value
-        ? item.warnings.length > 0 &&
-          item.warnings[0].warningLevel &&
-          assetWarningLevel.value
-            .toLowerCase()
-            .includes(item.warnings[0].warningLevel.toLowerCase())
+      const matchType = assetType.value
+        ? item.asset.typeId === assetType.value
         : true
-      const matchRegion = assetRegion.value
-        ? item.asset.region === assetRegion.value
-        : true
-      return matchName && matchLevel && matchRegion
+      return matchName && matchLevel && matchType
     })
     currentPage.value = 1
   },
@@ -131,16 +131,12 @@ watch(
 
 <template>
   <!-- assets filter -->
-  <div
-    style="
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    "
-  >
-    <el-input v-model="assetName" class="select-style"></el-input>
+  <div class="search-bar">
+    <el-input
+      v-model="assetName"
+      class="select-style"
+      placeholder="Search your assets"
+    ></el-input>
     <el-select
       v-model="assetWarningLevel"
       placeholder="Select warning level"
@@ -157,26 +153,24 @@ watch(
     </el-select>
 
     <el-select
-      v-model="assetRegion"
-      placeholder="Select Region"
+      v-model="assetType"
+      placeholder="Select Asset Type"
       size="large"
       clearable
       class="select-style"
     >
       <el-option
-        v-for="item in warningRegion"
+        v-for="item in assetTypeOptions"
         :key="item.value"
         :label="item.label"
         :value="item.value"
       ></el-option>
     </el-select>
-
-    <el-button @click="addAssetVisible = true"> Add asset </el-button>
   </div>
 
   <!-- cards for assets -->
   <div class="assets-container">
-    <h3 v-if="assetsStore.userAssets.length === 0">You don't have any asset</h3>
+    <h3 v-if="assetStore.userAssets?.length === 0">You don't have any asset</h3>
     <div class="card-grid">
       <el-card
         v-for="(item, index) in currentPageAssets"
@@ -186,7 +180,17 @@ watch(
       >
         <template #header>
           <div class="card-header">
-            <h3 class="asset-title">{{ item.asset.name || 'Asset Name' }}</h3>
+            <h3
+              class="asset-title"
+              :class="{
+                'warning-low': !item.warnings[0],
+                'warning-medium': item.warnings[0]?.warningLevel === 'YELLOW',
+                'warning-high': item.warnings[0]?.warningLevel === 'AMBER',
+                'warning-severe': item.warnings[0]?.warningLevel === 'RED'
+              }"
+            >
+              {{ item.asset.name || 'Asset Name' }}
+            </h3>
             <StatusIndicator :status="item.status" />
           </div>
         </template>
@@ -194,7 +198,7 @@ watch(
         <div class="map-container">
           <MapCard
             :map-id="'map-' + index"
-            :drain-area="[item.asset.location]"
+            :locations="[item.asset.location]"
           />
         </div>
 
@@ -232,9 +236,19 @@ watch(
 </template>
 
 <style scoped>
+.search-bar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  z-index: 1100;
+}
 .assets-container {
   padding: 16px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
 }
 
@@ -325,13 +339,30 @@ watch(
   width: 240px;
 }
 
+.warning-low {
+  color: green;
+}
+.warning-medium {
+  color: yellow;
+}
+.warning-high {
+  color: orange;
+}
+.warning-severe {
+  color: red;
+}
+
 @media (max-width: 768px) {
   .assets-container {
     padding: 12px;
   }
 
   .card-grid {
-    gap: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+
+    justify-content: center !important;
   }
 }
 

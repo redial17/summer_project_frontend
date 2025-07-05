@@ -2,40 +2,135 @@
 import { ref, onMounted } from 'vue'
 import { adminGetUsersService } from '@/api/admin'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores'
 
 const router = useRouter()
 const users = ref([])
-const userStore = useUserStore()
-const handleShowDetail = async (row) => {
-  userStore.setProxyId(row.assetHolderId)
 
-  // goto user interface
-  router.push('/myassets/manage')
+const multiSort = ref([])
+const columns = ref([
+  { prop: 'uid', label: 'UID' },
+  { prop: 'assetHolderId', label: 'Asset Holder Id' },
+  { prop: 'role', label: 'Role' },
+  { prop: 'count', label: 'Asset' }
+])
+const handleEdit = async (row) => {
+  router.push({ path: '/admin/user/detail', query: { id: row.assetHolderId } })
 }
+
+const handleSortChange = ({ prop, order }) => {
+  const index = multiSort.value.findIndex((item) => item.prop === prop)
+  if (index !== -1) {
+    if (!order) {
+      multiSort.value.splice(index, 1)
+    } else {
+      multiSort.value[index].order = order
+    }
+  } else {
+    if (order) {
+      multiSort.value.push({ prop, order })
+    }
+  }
+  fetchTableData()
+}
+
+const fetchTableData = async () => {
+  const propOrderList = []
+
+  for (const { prop, order } of multiSort.value) {
+    let dbField = ''
+    if (prop === 'uid') dbField = 'user_id'
+    else if (prop === 'assetHolderId') dbField = 'asset_holder_id'
+    else if (prop === 'count') dbField = 'accumulation'
+    // if no field, skip
+    else continue
+
+    const sortDir = order === 'descending' ? 'desc' : 'asc'
+    propOrderList.push(`${dbField},${sortDir}`)
+  }
+
+  // order by id asc by default
+  const sortStr =
+    propOrderList.length > 0 ? propOrderList.join(',') : 'user_id,asc'
+
+  const res = await adminGetUsersService(
+    'count',
+    (currentPage.value - 1) * pageSize.value,
+    pageSize.value,
+    sortStr
+  )
+
+  users.value = res.data.map((item) => {
+    return {
+      uid: item.user.id,
+      username: item.user.id,
+      assetHolderId: item.user.assetHolderId || 'none',
+      assets: item.user.id,
+      count: item.count,
+      role: item.user.admin ? 'admin' : 'user'
+    }
+  })
+}
+
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(50)
+
+const handlePageChange = (page) => {
+  currentPage.value = page
+  fetchTableData()
+}
+
+const handleSizeChange = (size) => {
+  pageSize.value = size
+  currentPage.value = 1
+  fetchTableData()
+}
+
 onMounted(async () => {
-  const res = await adminGetUsersService()
-  console.log(res)
-  users.value = res.data.map((item) => ({
-    uid: item.id,
-    username: item.id,
-    assetHolderId: item.assetHolderId || 'none',
-    assets: item.id
-  }))
+  await fetchTableData()
 })
 </script>
 
 <template>
+  <div class="search-wrapper">
+    <FilterSearch></FilterSearch>
+    <SortTool
+      v-model:multiSort="multiSort"
+      :columns="columns"
+      :fetch-table-data="fetchTableData"
+    ></SortTool>
+  </div>
+
+  <div class="collapse-wrapper">
+    <UserCollapse :users="users"></UserCollapse>
+  </div>
   <el-table
-    @row-click="handleRowClick"
     :data="users"
     stripe
     style="width: 100%"
+    @sort-change="handleSortChange"
+    :default-sort="multiSort[0] || {}"
+    class="table"
   >
-    <el-table-column prop="uid" label="UID" width="180" />
-    <el-table-column prop="assetHolderId" label="Asset Holder ID" width="180" />
-    <el-table-column prop="username" label="Username" width="180" />
-    <el-table-column prop="assets" label="Assets" width="180" />
+    <el-table-column
+      v-for="(item, index) in columns"
+      :key="index"
+      :label="item.label"
+      :prop="item.prop"
+      width="auto"
+      sortable="custom"
+    ></el-table-column>
+    <el-table-column label="permission">
+      <template #default>
+        <div style="display: flex; gap: 3px">
+          <PermissionIndicator :status="true"></PermissionIndicator>
+          <PermissionIndicator></PermissionIndicator>
+          <PermissionIndicator></PermissionIndicator>
+          <PermissionIndicator></PermissionIndicator>
+          <PermissionIndicator></PermissionIndicator>
+        </div>
+      </template>
+    </el-table-column>
     <el-table-column label="Actions">
       <template #default="scope">
         <el-button
@@ -43,8 +138,8 @@ onMounted(async () => {
           text
           type="primary"
           size="small"
-          @click="handleShowDetail(scope.row)"
-          >Show Detail</el-button
+          @click="handleEdit(scope.row)"
+          >Edit</el-button
         >
         <el-button
           text
@@ -56,4 +151,36 @@ onMounted(async () => {
       </template>
     </el-table-column>
   </el-table>
+
+  <el-pagination
+    background
+    layout="total, prev, pager, next, sizes"
+    :current-page="currentPage"
+    :page-size="pageSize"
+    :total="total"
+    @current-change="handlePageChange"
+    @size-change="handleSizeChange"
+  />
 </template>
+
+<style scoped>
+.search-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 35px;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+@media (min-width: 768px) {
+  .collapse-wrapper {
+    display: none !important;
+  }
+}
+@media (max-width: 768px) {
+  .table {
+    display: none !important;
+  }
+}
+</style>

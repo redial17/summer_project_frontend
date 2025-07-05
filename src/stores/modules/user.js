@@ -9,10 +9,17 @@ export const useUserStore = defineStore(
     const proxyId = ref('')
     const getUser = async (form) => {
       const { data } = await userLoginService(form)
+      user.value = data
+      if (!user.value.admin) getUserInfo()
+    }
 
-      const res = await userGetInfoService(data.id)
+    const getUserInfo = async () => {
+      const { data } = await userGetInfoService(user.value.id)
+      user.value = data
+    }
 
-      user.value = res.data
+    const updateUser = (obj) => {
+      user.value = obj
     }
 
     const setProxyId = (id) => {
@@ -23,7 +30,15 @@ export const useUserStore = defineStore(
       user.value = {}
       proxyId.value = ''
     }
-    return { user, getUser, reset, proxyId, setProxyId }
+    return {
+      user,
+      getUser,
+      reset,
+      proxyId,
+      setProxyId,
+      updateUser,
+      getUserInfo
+    }
   },
   {
     persist: true

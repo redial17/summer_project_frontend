@@ -1,12 +1,12 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
 import router from '@/router'
+import { useUserStore } from '@/stores'
 
 const baseURL = '/api'
 
 const instance = axios.create({
   baseURL,
-  timeout: 1000
+  timeout: 10000
 })
 
 // Add a request interceptor
@@ -25,13 +25,10 @@ instance.interceptors.response.use(
   function (response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     // Do something with response data
-
-    // TODO: login successful logic
     if (response.data) {
       return response.data
     }
     // failure
-    ElMessage.error(response)
     return Promise.reject(response.data)
   },
   function (error) {
@@ -40,11 +37,11 @@ instance.interceptors.response.use(
 
     // 401 permission denied or token expired
     if (error.response?.status === 401) {
+      const userStore = useUserStore()
+      userStore.reset()
       router.push('/login')
     }
-
     // default
-    ElMessage.error(error.response)
     return Promise.reject(error)
   }
 )

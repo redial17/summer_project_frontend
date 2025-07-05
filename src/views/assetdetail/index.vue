@@ -1,31 +1,55 @@
 <script setup>
-import { useAssetsStore } from '@/stores'
-import { useRoute } from 'vue-router'
-import { ref } from 'vue'
+import { useAssetStore, useUserStore } from '@/stores'
+import { useRoute, useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
 
 const route = useRoute()
-const assetsStore = useAssetsStore()
-const isEdit = false
-const contactOptions = [
-  { value: 'Email', label: 'Email' },
-  { value: 'SMS', label: 'SMS' },
-  { value: 'Discord', label: 'Discord' },
-  { value: 'WhatsApp', label: 'WhatsApp' },
-  { value: 'Telegram', label: 'Telegram' }
-]
-const contact = ref('Email')
-const drainArea = ref([])
-const asset = ref({})
+const router = useRouter()
+const assetStore = useAssetStore()
+const userStore = useUserStore()
 // get the asset
 const id = route.params.id
 
-const item =
-  assetsStore.userAssets.find((item) => item.asset.id === id) ||
-  assetsStore.allAssets.find((item) => item.asset.id === id)
+const item = computed(() => {
+  return (
+    assetStore.userAssets?.find((item) => item.asset.id === id) ||
+    assetStore.allAssets?.find((item) => item.asset.id === id)
+  )
+})
+console.log(item)
+const asset = computed(() => item.value?.asset || {})
+const tableData = computed(() => {
+  if (item.value && item.value.warnings) return item.value.warnings
+  else return []
+})
 
-drainArea.value = [item.asset.location]
-asset.value = item.asset
 const mapCardRef = ref()
+
+const mode = ref('convex')
+
+const locations = computed({
+  get: () => [asset.value.location],
+  set: (val) => {
+    asset.value.location = val[0]
+  }
+})
+
+const displayData = [
+  { label: 'ID', value: asset.value.id },
+  { label: 'Name', value: asset.value.name },
+  { label: 'Type', value: asset.value.type.name },
+  { label: 'Capacity litres', value: asset.value.capacityLitres },
+  {
+    label: 'Material',
+    value: asset.value.material
+  },
+  {
+    label: 'status',
+    value: asset.value.status
+  },
+  { label: 'Installed at', value: asset.value.installedAt },
+  { label: 'Last inspection', value: asset.value.lastInspection }
+]
 
 const beginDrawing = () => {
   mapCardRef.value.beginDrawing()
@@ -34,89 +58,118 @@ const beginDrawing = () => {
 const endDrawing = () => {
   mapCardRef.value.endDrawing()
 }
+
+const finishOneShape = () => {
+  mapCardRef.value.finishOneShape()
+}
+
+const cancelDrawing = () => {
+  mapCardRef.value.cancelDrawing
+}
+
+const handleShowDetail = (row) => {
+  router.push(`/warning/${row.id}`)
+}
 </script>
 
 <template>
-  <el-row>
+  <el-row :gutter="50" style="margin-bottom: 20px">
     <el-col :span="12">
-      <el-card style="max-width: 480px">
+      <el-card style="max-width: 600px">
         <template #header>
           <div class="card-header">
             <span>{{ asset.name }}</span>
           </div>
         </template>
-        <div style="height: 300px">
+        <div style="height: 600px">
           <MapCard
             ref="mapCardRef"
             :map-id="'mapdetail'"
-            :drain-area="drainArea"
+            v-model:locations="locations"
             :id="id"
+            :ownerId="item.asset.ownerId"
+            v-model:mode="mode"
           ></MapCard>
         </div>
-        <template #footer>Footer content</template>
       </el-card>
-      <el-button @click="beginDrawing">Draw new asset</el-button>
-      <el-button @click="endDrawing">End drawing</el-button>
     </el-col>
 
     <el-col :span="12">
-      <!-- info form -->
-      <el-form>
-        <el-form-item>
-          <el-select
-            v-model="contact"
-            placeholder="Select warning level"
-            size="large"
-            style="width: 240px"
-            @click="isEdit = true"
-          >
-            <el-option
-              v-for="item in contactOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-              @click="isEdit = true"
-            ></el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item>
-          <el-input
-            v-model="input"
-            style="width: 240px"
-            placeholder="Please input"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-input
-            v-model="input"
-            style="width: 240px"
-            placeholder="Please input"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button v-if="isEdit">Save</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button>Subscribe</el-button>
-        </el-form-item>
-      </el-form>
-      <el-button type="danger">Rest All</el-button>
+      <el-descriptions
+        title="Asset Detail"
+        :column="1"
+        direction="vertical"
+        border
+      >
+        <el-descriptions-item
+          v-for="(item, index) in displayData"
+          :key="index"
+          :label="item.label"
+          class-name="custom-item"
+          label-class-name="custom-label"
+        >
+          <span :class="{ 'multiline-text': item.isMultiline }">{{
+            item.value
+          }}</span>
+        </el-descriptions-item>
+      </el-descriptions>
     </el-col>
   </el-row>
 
   <div>
-    <el-table
-      :data="tableData"
-      style="width: 100%"
-      :row-class-name="tableRowClassName"
-    >
-      <el-table-column prop="WarningID" label="Warning ID" width="180" />
-      <el-table-column prop="name" label="Warning Type" width="180" />
-      <el-table-column prop="address" label="Warning Impact" width="180" />
-      <el-table-column prop="name" label="Warning Likelihood" width="180" />
-      <el-table-column prop="name" label="Valid From" width="180" />
-      <el-table-column prop="name" label="Valid To" width="180" />
+    <el-table :data="tableData" stripe style="width: 100%">
+      <el-table-column prop="id" label="Warning ID" width="180" />
+      <el-table-column prop="weatherType" label="Weather Type" width="180" />
+      <el-table-column prop="warningLevel" label="Warning Level" width="180" />
+      <el-table-column
+        prop="warningImpact"
+        label="Warning Impact"
+        width="180"
+      />
+      <el-table-column
+        prop="warningLikelihood"
+        label="Warning Likelihood"
+        width="180"
+      />
+      <el-table-column prop="validFrom" label="Warning Level" width="180" />
+      <el-table-column prop="validTo" label="Warning Level" width="180" />
+      <el-table-column label="Actions">
+        <template #default="scope">
+          <el-button
+            text
+            type="primary"
+            size="small"
+            @click="handleShowDetail(scope.row)"
+            >Show Detail</el-button
+          >
+          <el-button
+            text
+            type="danger"
+            size="small"
+            @click="handleDelete(scope.row)"
+            >Delete</el-button
+          >
+        </template>
+      </el-table-column>
     </el-table>
   </div>
+
+  <div v-if="userStore.user.admin">
+    <h3>action</h3>
+    <el-select v-model="mode">
+      <el-option label="convex" value="convex"></el-option>
+      <el-option label="sequence" value="sequence"></el-option>
+    </el-select>
+    <el-button @click="beginDrawing">Draw new asset</el-button>
+    <el-button @click="finishOneShape">Finish one shape</el-button>
+    <el-button @click="endDrawing">End drawing</el-button>
+    <el-button @click="cancelDrawing">Cancel drawing</el-button>
+  </div>
 </template>
+
+<style scoped>
+.multiline-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+</style>
