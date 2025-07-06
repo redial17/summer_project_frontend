@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useUserStore } from '@/stores'
+import { useUserStore } from '@/stores/index.ts'
 import { userUpdateInfoService } from '@/api/user'
 import { adminGetUserInfoService } from '@/api/admin'
 import { useRoute } from 'vue-router'

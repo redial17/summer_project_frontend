@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Filter, Sort, Search } from '@element-plus/icons-vue'
 import { ref, computed } from 'vue'
 const searchKeyword = ref('')

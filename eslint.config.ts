@@ -1,28 +1,39 @@
-import { defineConfig, globalIgnores } from 'eslint/config'
 import globals from 'globals'
-import js from '@eslint/js'
+import { globalIgnores } from 'eslint/config'
+import {
+  defineConfigWithVueTs,
+  vueTsConfigs
+} from '@vue/eslint-config-typescript'
 import pluginVue from 'eslint-plugin-vue'
+import pluginVitest from '@vitest/eslint-plugin'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 import prettierPlugin from 'eslint-plugin-prettier'
 
-export default defineConfig([
+export default defineConfigWithVueTs(
   {
     name: 'app/files-to-lint',
-    files: ['**/*.{js,mjs,jsx,vue}']
-  },
-
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
-
-  {
+    files: ['**/*.{ts,mts,tsx,vue}'],
     languageOptions: {
       globals: {
-        ...globals.browser
+        ...globals.browser,
+        ...globals.node,
+        ElMessage: 'readonly',
+        ElMessageBox: 'readonly',
+        ElLoading: 'readonly'
       }
     }
   },
 
-  js.configs.recommended,
-  ...pluginVue.configs['flat/essential'],
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+
+  pluginVue.configs['flat/essential'],
+  vueTsConfigs.recommended,
+
+  {
+    ...pluginVitest.configs.recommended,
+    files: ['src/**/__tests__/*']
+  },
+
   skipFormatting,
 
   {
@@ -40,6 +51,7 @@ export default defineConfig([
           endOfLine: 'auto'
         }
       ],
+
       'vue/multi-word-component-names': [
         'warn',
         {
@@ -47,19 +59,9 @@ export default defineConfig([
         }
       ],
       'vue/no-setup-props-destructure': 'off',
-      'no-undef': 'error',
 
+      'no-undef': 'error',
       'spaced-comment': ['warn', 'always']
     }
-  },
-
-  {
-    languageOptions: {
-      globals: {
-        ElMessage: 'readonly',
-        ElMessageBox: 'readonly',
-        ElLoading: 'readonly'
-      }
-    }
   }
-])
+)

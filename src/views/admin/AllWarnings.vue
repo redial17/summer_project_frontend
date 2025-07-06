@@ -1,7 +1,8 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useWarningStore } from '@/stores'
+import { useWarningStore } from '@/stores/index.ts'
+import type { Style } from '@/types'
 // TODO: warning display visibility function
 const outdatedWarnings = ref([])
 const liveWarnings = ref([])
@@ -58,15 +59,16 @@ const getRowClass = ({ row }) => {
   return ''
 }
 
-const setWarningLevelStyle = (level) => {
-  const style = { weight: 2, fillOpacity: 0.4 }
-  if (level?.toLowerCase().includes('yellow')) {
+const setWarningLevelStyle = (level: string): Style => {
+  const style = { weight: 2, fillOpacity: 0.4, color: '', fillColor: '' }
+  const l = level?.toLowerCase()
+  if (l?.includes('yellow')) {
     style.color = '#cc9900'
     style.fillColor = '#ffff00'
-  } else if (level?.toLowerCase().includes('amber')) {
+  } else if (l?.includes('amber')) {
     style.color = '#cc6600'
     style.fillColor = '#ffcc00'
-  } else if (level?.toLowerCase().includes('red')) {
+  } else if (l?.includes('red')) {
     style.color = '#800000'
     style.fillColor = '#ff0000'
   }

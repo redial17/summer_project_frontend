@@ -1,74 +1,88 @@
-<script setup>
-import { useAssetStore, useUserStore } from '@/stores'
+<script setup lang="ts">
+import { useAssetStore, useUserStore } from '@/stores/index.ts'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, computed } from 'vue'
+import type { Asset, AssetWithWarnings } from '@/types/asset'
+import type { Warning } from '@/types/warning'
+import type { MultiPolygon } from 'geojson'
+
+interface WarningTableRow {
+  id: number
+  weatherType: string
+  warningLevel: string
+  warningLikelihood: string
+  validFrom: string
+  validTo: string
+}
 
 const route = useRoute()
 const router = useRouter()
 const assetStore = useAssetStore()
 const userStore = useUserStore()
-// get the asset
+
 const id = route.params.id
 
-const item = computed(() => {
+const item = computed<AssetWithWarnings | undefined>(() => {
   return (
     assetStore.userAssets?.find((item) => item.asset.id === id) ||
     assetStore.allAssets?.find((item) => item.asset.id === id)
   )
 })
-console.log(item)
-const asset = computed(() => item.value?.asset || {})
-const tableData = computed(() => {
-  if (item.value && item.value.warnings) return item.value.warnings
-  else return []
+
+const asset = computed<Asset | null>(() => item.value?.asset ?? null)
+
+const tableData = computed<Warning[]>(() => {
+  return item.value?.warnings ?? []
 })
 
-const mapCardRef = ref()
+const mapCardRef = ref<{
+  beginDrawing: () => void
+  endDrawing: () => void
+  finishOneShape: () => void
+  cancelDrawing: () => void
+} | null>(null)
 
-const mode = ref('convex')
+const mode = ref<'convex' | 'polygon'>('convex')
 
-const locations = computed({
-  get: () => [asset.value.location],
+const locations = computed<MultiPolygon[]>({
+  get: () => (asset.value?.location ? [asset.value.location] : []),
   set: (val) => {
-    asset.value.location = val[0]
+    if (val.length > 0 && asset.value) {
+      asset.value.location = val[0]
+    }
   }
 })
 
-const displayData = [
-  { label: 'ID', value: asset.value.id },
-  { label: 'Name', value: asset.value.name },
-  { label: 'Type', value: asset.value.type.name },
-  { label: 'Capacity litres', value: asset.value.capacityLitres },
-  {
-    label: 'Material',
-    value: asset.value.material
-  },
-  {
-    label: 'status',
-    value: asset.value.status
-  },
-  { label: 'Installed at', value: asset.value.installedAt },
-  { label: 'Last inspection', value: asset.value.lastInspection }
-]
+const displayData = computed(() => [
+  { label: 'ID', value: asset.value?.id },
+  { label: 'Name', value: asset.value?.name },
+  { label: 'Type', value: asset.value?.type?.name },
+  { label: 'Capacity litres', value: asset.value?.capacityLitres },
+  { label: 'Material', value: asset.value?.material },
+  { label: 'Status', value: asset.value?.status },
+  { label: 'Installed at', value: asset.value?.installedAt },
+  { label: 'Last inspection', value: asset.value?.lastInspection }
+])
 
 const beginDrawing = () => {
-  mapCardRef.value.beginDrawing()
+  mapCardRef.value?.beginDrawing()
 }
-
 const endDrawing = () => {
-  mapCardRef.value.endDrawing()
+  mapCardRef.value?.endDrawing()
 }
-
 const finishOneShape = () => {
-  mapCardRef.value.finishOneShape()
+  mapCardRef.value?.finishOneShape()
 }
-
 const cancelDrawing = () => {
-  mapCardRef.value.cancelDrawing
+  mapCardRef.value?.cancelDrawing()
 }
 
-const handleShowDetail = (row) => {
+const handleShowDetail = (row: WarningTableRow) => {
   router.push(`/warning/${row.id}`)
+}
+
+const handleDelete = (row: WarningTableRow) => {
+  console.log('delete', row)
 }
 </script>
 
@@ -78,7 +92,7 @@ const handleShowDetail = (row) => {
       <el-card style="max-width: 600px">
         <template #header>
           <div class="card-header">
-            <span>{{ asset.name }}</span>
+            <span>{{ asset?.name }}</span>
           </div>
         </template>
         <div style="height: 600px">
@@ -87,7 +101,7 @@ const handleShowDetail = (row) => {
             :map-id="'mapdetail'"
             v-model:locations="locations"
             :id="id"
-            :ownerId="item.asset.ownerId"
+            :ownerId="item?.asset.ownerId"
             v-model:mode="mode"
           ></MapCard>
         </div>
@@ -108,9 +122,7 @@ const handleShowDetail = (row) => {
           class-name="custom-item"
           label-class-name="custom-label"
         >
-          <span :class="{ 'multiline-text': item.isMultiline }">{{
-            item.value
-          }}</span>
+          <span class="multiline-text">{{ item.value }}</span>
         </el-descriptions-item>
       </el-descriptions>
     </el-col>
@@ -154,7 +166,7 @@ const handleShowDetail = (row) => {
     </el-table>
   </div>
 
-  <div v-if="userStore.user.admin">
+  <div v-if="userStore.user?.admin">
     <h3>action</h3>
     <el-select v-model="mode">
       <el-option label="convex" value="convex"></el-option>

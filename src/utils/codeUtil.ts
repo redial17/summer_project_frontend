@@ -19,7 +19,7 @@ const Code = {
 }
 
 const CodeUtil = {
-  isSuccess(code) {
+  isSuccess(code: number) {
     return [
       Code.SUCCESS,
       Code.INSERT_OK,
@@ -29,7 +29,7 @@ const CodeUtil = {
     ].includes(code)
   },
 
-  isError(code) {
+  isError(code: number) {
     return [
       Code.INSERT_ERR,
       Code.DELETE_ERR,
@@ -38,19 +38,19 @@ const CodeUtil = {
     ].includes(code)
   },
 
-  isSystemError(code) {
+  isSystemError(code: number) {
     return code === Code.SYSTEM_ERR
   },
 
-  isBusinessError(code) {
+  isBusinessError(code: number) {
     return code === Code.BUSINESS_ERR
   },
 
-  isTokenError(code) {
+  isTokenError(code: number) {
     return [Code.LOGIN_TOKEN_ERR, Code.LOGIN_TOKEN_MISSING].includes(code)
   },
 
-  getMessage(code) {
+  getMessage(code: number) {
     if (this.isSuccess(code)) return 'Success'
     if (this.isError(code)) return 'CRUD error'
     if (this.isSystemError(code)) return 'System error'

@@ -4,6 +4,7 @@ import {
   adminGetAllLiveWarningsService,
   adminGetAllWarningsService
 } from '@/api/admin'
+import type { Warning } from '@/types'
 
 export const useWarningStore = defineStore(
   'rain-warnings',
@@ -12,8 +13,8 @@ export const useWarningStore = defineStore(
       allWarnings.value = []
     }
 
-    const allWarnings = ref([])
-    const liveWarnings = ref([])
+    const allWarnings = ref<Warning[]>([])
+    const liveWarnings = ref<Warning[]>([])
 
     const getAllWarnings = async () => {
       const res = await adminGetAllWarningsService()

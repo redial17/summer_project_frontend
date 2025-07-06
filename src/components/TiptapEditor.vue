@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { watch, ref, computed } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'

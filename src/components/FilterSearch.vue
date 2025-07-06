@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { Filter } from '@element-plus/icons-vue'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 const assetTypeOptions = [

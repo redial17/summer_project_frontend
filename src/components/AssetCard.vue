@@ -1,27 +1,29 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 const props = defineProps({
   asset: Object
 })
 const displayData = ref()
 
-displayData.value = [
-  { label: 'ID', value: props.asset.id },
+if (props.asset) {
+  displayData.value = [
+    { label: 'ID', value: props.asset.id },
 
-  { label: 'Type', value: props.asset.type },
-  { label: 'Capacity litres', value: props.asset.capacityLitres },
-  {
-    label: 'Material',
-    value: props.asset.material
-  },
-  {
-    label: 'status',
-    value: props.asset.status
-  },
-  { label: 'Installed at', value: props.asset.installedAt },
-  { label: 'Last inspection', value: props.asset.lastInspection }
-]
-console.log(displayData)
+    { label: 'Type', value: props.asset.type },
+    { label: 'Capacity litres', value: props.asset.capacityLitres },
+    {
+      label: 'Material',
+      value: props.asset.material
+    },
+    {
+      label: 'status',
+      value: props.asset.status
+    },
+    { label: 'Installed at', value: props.asset.installedAt },
+    { label: 'Last inspection', value: props.asset.lastInspection }
+  ]
+  console.log(displayData)
+}
 </script>
 
 <template>

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -96,8 +97,8 @@ Navigation Guards, enable when deploying
 
 router.beforeEach((to) => {
   const userStore = useUserStore()
-  const isLoggedIn = Object.keys(userStore.user).length > 0
-  const isAdmin = isLoggedIn && userStore.user.admin === true
+  const isLoggedIn = userStore.user !== null
+  const isAdmin = isLoggedIn && userStore.user?.admin === true
 
   if (to.path === '/recover') return true
 

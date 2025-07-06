@@ -1,7 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
 import request from '@/utils/request'
-import { useUserStore } from '@/stores'
+import { useUserStore } from '@/stores/index.ts'
 import { assetInsertService } from '@/api/assets'
 
 const userStore = useUserStore()
@@ -71,7 +71,7 @@ const form = reactive({
 })
 const mapCardRef = ref()
 
-const searchLocation = async (address) => {
+const searchLocation = async (address: string) => {
   if (!address) return
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
   const data = await request(url)

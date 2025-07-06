@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue'
 import { adminGetUKMapService } from '@/api/admin'
 import * as echarts from 'echarts'
