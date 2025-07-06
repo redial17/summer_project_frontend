@@ -45,10 +45,10 @@ export interface LoginForm {
 
 export interface UserInfoForm {
   id: string
-  password: string
-  repassword: string
-  firstName: string
-  lastName: string
+  password?: string
+  repassword?: string
+  firstName?: string
+  lastName?: string
   assetHolder: {
     name: string
     email: string

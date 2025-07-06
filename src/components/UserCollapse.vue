@@ -5,7 +5,7 @@ const props = defineProps({
 })
 const activeNames = ref(0)
 
-const handleChange = (val) => {
+const handleChange = (val: number) => {
   console.log(val)
 }
 </script>

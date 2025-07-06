@@ -24,7 +24,7 @@ const handleClickOutside = (e) => {
   console.log(visible.value)
   const popoverEl = popoverRef.value?.popperRef?.contentRef
   const referenceEl = referenceRef.value.$el
-  const dropdownEl = document.querySelector('.el-select-dropdown') // select 的弹窗
+  const dropdownEl = document.querySelector('.el-select-dropdown')
   if (
     !popoverEl.contains(e.target) &&
     !referenceEl.contains(e.target) &&
