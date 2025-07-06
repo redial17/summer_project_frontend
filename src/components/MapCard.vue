@@ -8,7 +8,13 @@ import { assetUpdateInfoService } from '@/api/assets'
 import * as turf from '@turf/turf'
 import type { LeafletMouseEvent } from 'leaflet'
 import { ElMessage } from 'element-plus'
-import type { Feature, MultiPolygon, Position } from 'geojson'
+import type {
+  Feature,
+  FeatureCollection,
+  MultiPolygon,
+  Position
+} from 'geojson'
+import type { Style } from '@/types'
 
 const customIcon = new L.Icon({
   iconUrl: markerIcon,
@@ -25,6 +31,7 @@ const props = defineProps<{
   id: string
   mode: string
   ownerId: string
+  style: Style
 }>()
 
 const emit = defineEmits(['update:locations'])
@@ -155,7 +162,7 @@ watch(
 
     if (!newVal || newVal.length === 0) return
 
-    const featureCollection = {
+    const featureCollection: FeatureCollection = {
       type: 'FeatureCollection',
       features: newVal.map((geometry) => ({
         type: 'Feature',
@@ -164,7 +171,9 @@ watch(
       }))
     }
 
-    const geoLayer = L.geoJSON(featureCollection).addTo(m)
+    const geoLayer = L.geoJSON(featureCollection, {
+      style: props.style
+    }).addTo(m)
 
     m.fitBounds(geoLayer.getBounds())
   },
@@ -180,7 +189,7 @@ onMounted(async () => {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map)
 
-  const featureCollection = {
+  const featureCollection: FeatureCollection = {
     type: 'FeatureCollection',
     features: props.locations?.map((geometry) => ({
       type: 'Feature',
@@ -189,7 +198,9 @@ onMounted(async () => {
     }))
   }
 
-  saveLayer = L.geoJSON(featureCollection).addTo(map)
+  saveLayer = L.geoJSON(featureCollection, {
+    style: props.style
+  }).addTo(map)
   if (saveLayer) {
     map.fitBounds(saveLayer.getBounds())
   }

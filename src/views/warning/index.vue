@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { useWarningStore } from '@/stores'
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import type { Style } from '@/types'
 const route = useRoute()
 const warningStore = useWarningStore()
@@ -11,6 +11,13 @@ const mapId = 'map-' + route.params.id
 const warning = computed(() =>
   warningStore.allWarnings.find((item) => item.id === Number(route.params.id))
 )
+
+const style = ref<Style>({
+  weight: 1,
+  fillOpacity: 0,
+  color: '',
+  fillColor: ''
+})
 
 const setWarningLevelStyle = (level: string): Style => {
   const style = { weight: 2, fillOpacity: 0.4, color: '', fillColor: '' }
@@ -29,7 +36,7 @@ const setWarningLevelStyle = (level: string): Style => {
 }
 
 if (warning.value) {
-  warning.value.area.style = setWarningLevelStyle(warning.value.warningLevel)
+  style.value = setWarningLevelStyle(warning.value.warningLevel)
 }
 
 const displayData = computed(() => {
@@ -76,7 +83,7 @@ onMounted(() => {
 
 <template>
   <div class="map-container">
-    <MapCard :map-id="mapId" :locations="[warning?.area]" />
+    <MapCard :map-id="mapId" :locations="[warning?.area]" :style="style" />
   </div>
 
   <el-descriptions title="Warning Detail" :column="1" direction="vertical">

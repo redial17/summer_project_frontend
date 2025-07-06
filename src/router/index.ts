@@ -53,7 +53,7 @@ const router = createRouter({
         },
         {
           path: 'message',
-          component: () => import('@/views/message/index.vue')
+          component: () => import('@/views/inbox/index.vue')
         },
         {
           path: 'asset/add',
@@ -69,7 +69,7 @@ const router = createRouter({
         },
         {
           path: 'admin/message',
-          component: () => import('@/views/message/index.vue')
+          component: () => import('@/views/inbox/index.vue')
         },
         {
           path: 'admin/message/template',

@@ -3,19 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAssetStore } from '@/stores/index'
 import { adminDeleteAssetService } from '@/api/admin'
-
-interface AssetTableItem {
-  id: string
-  name: string
-  type: string
-  capacityLitres: number
-  material: string
-  status: string
-  installedAt: string
-  lastInspection: string
-  assetHolderId: string
-  warningLevel: string
-}
+import type { AssetTableItem } from '@/types'
 
 const assets = ref<AssetTableItem[]>([])
 const router = useRouter()
@@ -140,7 +128,9 @@ const handleSortChange = (sort: { prop: string; order: string | null }) => {
     if (!sort.order) {
       multiSort.value.splice(index, 1)
     } else {
-      multiSort.value[index].order = sort.order
+      if (index >= 0 && index < multiSort.value.length) {
+        multiSort.value[index]!.order = sort.order
+      }
     }
   } else {
     if (sort.order) {

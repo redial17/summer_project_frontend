@@ -261,20 +261,6 @@ watch(
       <el-main>
         <router-view></router-view>
         <CustomerService v-if="!userStore.user?.admin"></CustomerService>
-        <!-- consider delete -->
-        <!-- <el-dialog v-model="searchDialogVisible" title="Tips" width="500">
-          <span>This is a message</span>
-          <template #footer>
-            <div class="dialog-footer">
-              <el-button @click="searchDialogVisible = false">
-                Cancel
-              </el-button>
-              <el-button type="primary" @click="searchDialogVisible = false">
-                Confirm
-              </el-button>
-            </div>
-          </template>
-        </el-dialog> -->
         <SearchDialog v-model:visible="searchDialogVisible"></SearchDialog>
       </el-main>
     </el-container>

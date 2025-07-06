@@ -59,7 +59,7 @@ export default defineConfigWithVueTs(
         }
       ],
       'vue/no-setup-props-destructure': 'off',
-
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-undef': 'error',
       'spaced-comment': ['warn', 'always']
     }

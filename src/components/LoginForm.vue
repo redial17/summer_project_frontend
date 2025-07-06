@@ -16,7 +16,6 @@ const loginFormRef = ref()
 const registerFormRef = ref()
 
 const isRegister = ref(false)
-const isRecover = ref(false)
 
 const loginForm = ref<LoginForm>({
   username: '',
@@ -28,6 +27,53 @@ const passwordInput = ref<HTMLInputElement | null>(null)
 
 const shiftFocusToPassword = () => {
   passwordInput.value?.focus()
+}
+
+// register
+const currentStep = ref(1)
+const openSteps = ref(['1'])
+const stepStatus = ref({
+  1: false,
+  2: false,
+  3: false
+})
+
+const editingStep = ref<number | null>(null)
+
+const confirmEmail = async () => {
+  const valid = await registerFormRef.value.validateField('assetHolder.email')
+  if (valid) {
+    stepStatus.value[1] = true
+    currentStep.value = 2
+    editingStep.value = null
+    if (!openSteps.value.includes('2')) openSteps.value.push('2')
+  }
+}
+
+const goToStep3 = async () => {
+  const valid = await registerFormRef.value.validateField([
+    'id',
+    'assetHolder.phone'
+  ])
+  if (valid) {
+    stepStatus.value[2] = true
+    currentStep.value = 3
+    editingStep.value = null
+    openSteps.value = ['1', '2', '3']
+  }
+}
+
+const editStep = (step: number) => {
+  currentStep.value = step
+  editingStep.value = step
+  openSteps.value = [String(step)]
+}
+
+const getStepTitleClass = (step: number) => {
+  return {
+    'step-header-disabled':
+      editingStep.value !== null && editingStep.value !== step
+  }
 }
 
 const registerForm = ref({
@@ -246,133 +292,299 @@ watch(isRegister, () => {
     size="large"
     autocomplete="off"
     class="form-style"
-    v-if="!isRegister && !isRecover"
+    v-if="!isRegister"
   >
-    <el-form-item>
-      <h1>Sign in</h1>
+    <!-- Sign in-->
+    <el-form-item class="form-heading">
+      <div class="form-title-group">
+        <h1 class="form-title">SIGN IN</h1>
+        <p class="form-subtitle">Please enter your details</p>
+      </div>
     </el-form-item>
+
     <el-form-item prop="username">
       <el-input
         v-model="loginForm.username"
         :prefix-icon="User"
-        placeholder="Please input username"
+        placeholder="Username"
         @keydown.shift.enter="shiftFocusToPassword"
-      ></el-input>
+      />
     </el-form-item>
+
     <el-form-item prop="password">
       <el-input
         ref="passwordInput"
         v-model="loginForm.password"
-        name="password"
         :prefix-icon="Lock"
         type="password"
-        placeholder="Please input password"
+        placeholder="Password"
         @keydown.enter="login"
-      ></el-input>
+      />
     </el-form-item>
+
+    <el-form-item>
+      <el-button class="button" type="primary" @click="login">
+        Sign in
+      </el-button>
+    </el-form-item>
+
     <el-form-item>
       <div class="flex">
         <el-checkbox>Remember me</el-checkbox>
         <el-link
           type="primary"
           :underline="false"
-          @click="router.push('recover')"
-          >Forget password?</el-link
-        >
+          @click="router.push('/login/recover')"
+          >Forget password?
+        </el-link>
       </div>
     </el-form-item>
-    <el-form-item>
-      <el-button @click="login" class="button" type="primary" auto-insert-space
-        >Sign in</el-button
-      >
-    </el-form-item>
-    <el-form-item class="flex">
-      <el-link type="info" :underline="false" @click="isRegister = true">
-        Register →
-      </el-link>
+
+    <el-form-item class="fixed-bottom-tip">
+      <span>Don't have an account? &nbsp;&nbsp;</span>
+      <el-link type="primary" @click="isRegister = true">Register</el-link>
     </el-form-item>
   </el-form>
 
-  <!-- Register form -->
+  <!-- register -->
   <el-form
-    class="form-style"
+    v-else
     :model="registerForm"
     :rules="rules"
     ref="registerFormRef"
     size="large"
-    autocomplete="off"
-    v-else-if="isRegister && !isRecover"
+    class="form-style"
   >
-    <el-form-item>
-      <h1>Register</h1>
-    </el-form-item>
-    <el-form-item prop="assetHolder.email">
-      <el-input
-        v-model="registerForm.assetHolder.email"
-        :prefix-icon="Message"
-        placeholder="Please input your email"
-        style="width: 100%"
-        type="email"
-        autocomplete="email"
-      ></el-input>
+    <el-form-item class="form-heading">
+      <div class="form-title-group">
+        <h1 class="form-title">SIGN UP</h1>
+      </div>
     </el-form-item>
 
-    <el-form-item prop="assetHolder.phone">
-      <el-input
-        v-model="registerForm.assetHolder.phone"
-        :prefix-icon="Phone"
-        placeholder="Please input your phone number"
-        style="width: 100%"
-        type="phone"
-        autocomplete="phone"
-      ></el-input>
-    </el-form-item>
-
-    <el-form-item prop="id">
-      <el-input
-        v-model="registerForm.id"
-        :prefix-icon="User"
-        placeholder="Please input username"
-        style="width: 100%"
-      ></el-input>
-    </el-form-item>
-    <el-form-item prop="password">
-      <el-input
-        v-model="registerForm.password"
-        :prefix-icon="Lock"
-        type="password"
-        placeholder="Please input password"
-      ></el-input>
-    </el-form-item>
-    <el-form-item prop="repassword">
-      <el-input
-        v-model="registerForm.repassword"
-        :prefix-icon="Lock"
-        type="password"
-        placeholder="Please input password again"
-      ></el-input>
-    </el-form-item>
-    <el-form-item>
-      <el-button
-        @click="register"
-        class="button"
-        type="primary"
-        auto-insert-space
+    <el-collapse v-model="openSteps">
+      <!-- Step 1 -->
+      <el-collapse-item
+        name="1"
+        :disabled="editingStep !== null && editingStep !== 1"
       >
-        Register
-      </el-button>
-    </el-form-item>
-    <el-form-item class="flex">
-      <el-link type="info" :underline="false" @click="isRegister = false">
-        ← Back
+        <template #title>
+          <div class="collapse-title">
+            <span>Step 1:&nbsp;Your Email</span>
+          </div>
+        </template>
+
+        <template v-if="editingStep !== 1 && stepStatus[1]">
+          <div class="details-line">
+            <span class="email">{{ registerForm.assetHolder.email }}</span>
+            <el-link type="primary" @click.stop="editStep(1)" class="change">
+              CHANGE
+            </el-link>
+          </div>
+        </template>
+        <template v-else>
+          <el-form-item prop="assetHolder.email">
+            <el-input
+              v-model="registerForm.assetHolder.email"
+              :prefix-icon="Message"
+              placeholder="Please input your email"
+              type="email"
+              autocomplete="email"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="confirmEmail" class="step-button">
+              Continue
+            </el-button>
+          </el-form-item>
+        </template>
+      </el-collapse-item>
+
+      <!-- Step 2 -->
+      <el-collapse-item
+        name="2"
+        :disabled="
+          !stepStatus[1] || (editingStep !== null && editingStep !== 2)
+        "
+      >
+        <template #title>
+          <div class="collapse-title">
+            <span>Step 2:&nbsp;Your Details</span>
+          </div>
+        </template>
+
+        <template v-if="editingStep !== 2 && stepStatus[2]">
+          <div class="details-line">
+            <div class="details">
+              <div>{{ registerForm.id }}</div>
+              <div>{{ registerForm.assetHolder.phone }}</div>
+            </div>
+            <el-link
+              v-if="stepStatus[2] && editingStep !== 2"
+              type="primary"
+              @click.stop="editStep(2)"
+              class="change"
+            >
+              CHANGE
+            </el-link>
+          </div>
+        </template>
+        <template v-else>
+          <el-form-item prop="id">
+            <el-input
+              v-model="registerForm.id"
+              :prefix-icon="User"
+              placeholder="Please input username"
+            />
+          </el-form-item>
+          <el-form-item prop="assetHolder.phone">
+            <el-input
+              v-model="registerForm.assetHolder.phone"
+              :prefix-icon="Phone"
+              placeholder="Please input your phone number"
+              type="phone"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="goToStep3" class="step-button">
+              Save and continue
+            </el-button>
+          </el-form-item>
+        </template>
+      </el-collapse-item>
+
+      <!-- Step 3 -->
+      <el-collapse-item
+        name="3"
+        :disabled="
+          !stepStatus[2] || (editingStep !== null && editingStep !== 3)
+        "
+        :class="getStepTitleClass(3)"
+      >
+        <template #title>
+          <div class="collapse-title">
+            <span>Step 3:&nbsp;Account Info</span>
+          </div>
+        </template>
+
+        <template v-if="editingStep !== 3 && stepStatus[3]">
+          <div class="details-line">
+            <span class="details">Password is set</span>
+          </div>
+        </template>
+        <template v-else>
+          <el-form-item prop="password">
+            <el-input
+              v-model="registerForm.password"
+              :prefix-icon="Lock"
+              type="password"
+              placeholder="Please input password"
+            />
+          </el-form-item>
+          <el-form-item prop="repassword">
+            <el-input
+              v-model="registerForm.repassword"
+              :prefix-icon="Lock"
+              type="password"
+              placeholder="Please input password again"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button @click="register" class="step-button">
+              SAVE AND CONTINUE
+            </el-button>
+          </el-form-item>
+        </template>
+      </el-collapse-item>
+    </el-collapse>
+
+    <el-form-item class="fixed-bottom-tip">
+      <span>Already have an account?&nbsp;&nbsp;</span>
+      <el-link type="primary" :underline="false" @click="isRegister = false">
+        Sign in
       </el-link>
     </el-form-item>
   </el-form>
 </template>
 
 <style scoped>
+:deep(.el-collapse-item__header),
+:deep(.el-collapse-it__wrap),
+:deep(.el-collapse-item__content) {
+  /*background-color: transparent;*/
+  padding: 0 0;
+  box-sizing: border-box;
+  background-color: rgba(115, 162, 230, 0);
+}
+
+.el-collapse-item {
+  margin: 0;
+  border-bottom: none;
+  background-color: rgba(115, 162, 230, 0);
+}
+
+:deep(.el-collapse-item__wrap) {
+  background-color: rgba(80, 60, 120, 0);
+
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.collapse-title {
+  display: flex;
+  width: 100%;
+  font-size: 16px;
+  font-weight: bold;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.details-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.details {
+  font-size: 14px;
+  color: #333;
+}
+
+.change {
+  font-size: 14px;
+  color: #409eff;
+  cursor: pointer;
+}
+
+.form-title-group {
+  width: 100%;
+  padding-top: 10px;
+}
+
+.form-title {
+  font-size: 35px;
+  font-weight: bold;
+  color: #222;
+  margin: 0;
+}
+
+.form-subtitle {
+  font-size: 16px;
+  color: #888;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+:deep(.el-collapse-item__header) {
+  border: none;
+}
+
+:deep(.el-collapse) {
+  border: none;
+}
+
 .form-style {
-  width: 80%;
+  width: 85%;
   margin: 0 auto;
 }
 
@@ -381,5 +593,35 @@ watch(isRegister, () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.button {
+  width: 100%;
+  text-transform: uppercase;
+  background-color: #75b4f4;
+  border-radius: 4px;
+
+  font-weight: bold;
+  font-size: 16px;
+  border: none;
+  color: #fff;
+}
+
+.button:hover {
+  background-color: #5294d8;
+}
+
+.step-button {
+  width: 100%;
+  text-transform: uppercase;
+  border: 2px solid #75b4f4;
+  color: #ffffff;
+  background-color: rgba(117, 180, 244, 0.51);
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.step-button:hover {
+  background-color: #75b4f4;
 }
 </style>

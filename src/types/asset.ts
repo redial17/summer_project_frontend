@@ -41,3 +41,16 @@ export interface AssetForm {
   lastInspection: string
   location: MultiPolygon | ''
 }
+
+export interface AssetTableItem {
+  id: string
+  name: string
+  type: string
+  capacityLitres: number
+  material: string
+  status: string
+  installedAt: string
+  lastInspection: string
+  assetHolderId: string
+  warningLevel: string
+}

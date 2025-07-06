@@ -7,7 +7,7 @@ import { userCheckUIDService } from '@/api/user'
 import { adminGetUserInfoByUIDService } from '@/api/admin'
 import { userInsertAssetService } from '@/api/user'
 import { adminInsertAssetService } from '@/api/admin'
-import type { Feature } from 'geojson'
+import type { Feature, MultiPolygon } from 'geojson'
 import { ElMessage, type FormItemRule } from 'element-plus'
 import type { ComponentPublicInstance } from 'vue'
 import type MapCard from '@/components/MapCard.vue'
@@ -33,8 +33,16 @@ const convertToGeoJSON = (
     importance: data.importance
   }
 
+  if (!Array.isArray(data.boundingbox) || data.boundingbox.length < 4) {
+    throw new Error('Invalid boundingbox')
+  }
+  const [south, north, west, east] = data.boundingbox.map(Number) as [
+    number,
+    number,
+    number,
+    number
+  ]
   if (type === 'multipolygon' && data.boundingbox) {
-    const [south, north, west, east] = data.boundingbox.map(Number)
     const polygon = [
       [west, south],
       [east, south],
@@ -54,7 +62,6 @@ const convertToGeoJSON = (
       properties
     }
   } else if (type === 'polygon' && data.boundingbox) {
-    const [south, north, west, east] = data.boundingbox.map(Number)
     const polygon = [
       [west, south],
       [east, south],
@@ -172,9 +179,9 @@ const searchLocation = async (address: string) => {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
   const data = (await request(url)) as NominatimResult[]
   if (data.length > 0) {
-    const geometry = convertToGeoJSON(data[0], 'multipolygon')
+    const multiPolygon = convertToGeoJSON(data[0]!, 'multipolygon')
     form.value.locations = []
-    form.value.locations.push(geometry.geometry)
+    form.value.locations.push(multiPolygon.geometry as MultiPolygon)
   }
   console.log(form.value.locations)
 }
@@ -218,7 +225,7 @@ const userSubmit = async () => {
   } catch {
     return
   }
-  form.value.location = form.value.locations[0]
+  form.value.location = form.value.locations[0] ?? ''
   if (userStore.user?.assetHolderId) {
     form.value.ownerId = userStore.user.assetHolderId
   }
@@ -239,7 +246,7 @@ const adminSubmit = async () => {
   } catch {
     return
   }
-  form.value.location = form.value.locations[0]
+  form.value.location = form.value.locations[0] ?? ''
 
   const res = await adminGetUserInfoByUIDService(form.value.username)
   if (res.data.assetHolderId) {

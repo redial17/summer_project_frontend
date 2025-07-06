@@ -22,14 +22,15 @@ const userStore = useUserStore()
 
 const id = route.params.id
 
-const item = computed<AssetWithWarnings | undefined>(() => {
-  return (
+const item = computed<AssetWithWarnings>(() => {
+  const item =
     assetStore.userAssets?.find((item) => item.asset.id === id) ||
     assetStore.allAssets?.find((item) => item.asset.id === id)
-  )
+  if (!item) throw new Error(`Can find asset ${id}`)
+  else return item
 })
 
-const asset = computed<Asset | null>(() => item.value?.asset ?? null)
+const asset = computed<Asset>(() => item.value.asset)
 
 const tableData = computed<Warning[]>(() => {
   return item.value?.warnings ?? []
@@ -44,13 +45,8 @@ const mapCardRef = ref<{
 
 const mode = ref<'convex' | 'polygon'>('convex')
 
-const locations = computed<MultiPolygon[]>({
-  get: () => (asset.value?.location ? [asset.value.location] : []),
-  set: (val) => {
-    if (val.length > 0 && asset.value) {
-      asset.value.location = val[0]
-    }
-  }
+const locations = computed<MultiPolygon[]>(() => {
+  return [asset.value.location]
 })
 
 const displayData = computed(() => [

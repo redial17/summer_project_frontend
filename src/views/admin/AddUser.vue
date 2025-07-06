@@ -7,8 +7,10 @@ import {
 import CodeUtil from '@/utils/codeUtil'
 import { ElMessage } from 'element-plus'
 import { ref, onMounted } from 'vue'
-import type { FormItemRule } from 'element-plus'
+import type { FormRules } from 'element-plus'
 import type { UserInfoForm } from '@/types'
+import type { InternalRuleItem } from 'async-validator'
+
 const form = ref<UserInfoForm>({
   id: '',
   password: '',
@@ -38,7 +40,7 @@ const form = ref<UserInfoForm>({
 
 const formRef = ref()
 
-const rules = {
+const rules = ref<FormRules<typeof form>>({
   id: [
     { required: true, message: 'Please input username', trigger: 'blur' },
     {
@@ -48,19 +50,21 @@ const rules = {
       trigger: 'blur'
     },
     {
-      validator: async (
-        rule: FormItemRule,
+      asyncValidator: async (
+        rule: InternalRuleItem,
         value: string,
-        callback: (error?: Error) => void
+        callback: (error?: string | Error) => void
       ) => {
-        const res = await userCheckUIDService(value)
-        // success means find a username called ${value}
-        if (CodeUtil.isSuccess(res.code)) {
-          callback(
-            new Error(`Username '${value}' is already exists, try a new one`)
-          )
+        try {
+          const res = await userCheckUIDService(value)
+          if (CodeUtil.isSuccess(res.code)) {
+            callback(new Error(`Username '${value}' already exists`))
+          } else {
+            callback()
+          }
+        } catch {
+          callback('Server error')
         }
-        callback()
       },
       trigger: 'blur'
     }
@@ -86,7 +90,7 @@ const rules = {
     },
     {
       validator: (
-        rule: FormItemRule,
+        rule: InternalRuleItem,
         value: string,
         callback: (error?: Error) => void
       ) => {
@@ -121,8 +125,8 @@ const rules = {
     { required: true, message: 'Email is required', trigger: 'blur' },
     { type: 'email', message: 'Invalid email format', trigger: 'blur' },
     {
-      validator: async (
-        rule: FormItemRule,
+      asyncValidator: async (
+        rule: InternalRuleItem,
         value: string,
         callback: (error?: Error) => void
       ) => {
@@ -139,7 +143,7 @@ const rules = {
     { required: true, message: 'Phone is required', trigger: 'blur' },
     {
       validator: (
-        rule: FormItemRule,
+        rule: InternalRuleItem,
         value: string,
         callback: (error?: Error) => void
       ) => {
@@ -160,7 +164,7 @@ const rules = {
     { required: true, message: 'Post code is required', trigger: 'blur' },
     {
       validator: (
-        rule: FormItemRule,
+        rule: InternalRuleItem,
         value: string,
         callback: (error?: Error) => void
       ) => {
@@ -180,7 +184,7 @@ const rules = {
   'assetHolder.address.country': [
     { required: true, message: 'Country is required', trigger: 'blur' }
   ]
-}
+})
 
 const submit = async () => {
   try {

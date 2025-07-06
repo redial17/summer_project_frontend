@@ -1,3 +1,5 @@
+import type { MultiPolygon } from 'geojson'
+
 export interface Style {
   weight: number
   fillOpacity: number
@@ -24,5 +26,5 @@ export interface Warning {
   whatToExpect: string
   warningFurtherDetails: string
   warningUpdateDescription: string
-  area: Area
+  area: MultiPolygon
 }

@@ -8,8 +8,11 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const user = ref()
-
-const descriptionsItem = ref([])
+interface DescriptionItem {
+  label: string
+  value: string
+}
+const descriptionsItem = ref<DescriptionItem[]>([])
 
 const userFormRef = ref()
 const checkboxOptions = ref([

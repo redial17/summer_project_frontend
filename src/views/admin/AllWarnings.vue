@@ -3,28 +3,48 @@ import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWarningStore } from '@/stores/index.ts'
 import type { Style } from '@/types'
+import type { MultiPolygon } from 'geojson'
 // TODO: warning display visibility function
-const outdatedWarnings = ref([])
-const liveWarnings = ref([])
+const outdatedWarnings = ref<TableRow[]>([])
+const liveWarnings = ref<TableRow[]>([])
 const router = useRouter()
 const warningStore = useWarningStore()
 const mapId = 'allWarningsMap'
-const warningPolygon = ref([])
+const warningPolygon = ref<MultiPolygon[]>([])
+const style = ref<Style>({
+  weight: 1,
+  fillOpacity: 0.4,
+  color: '',
+  fillColor: ''
+})
+interface TableRow {
+  id: number
+  weatherType: string
+  warningImpact: string
+  warningLevel: string
+  warningLikelihood: string
+  validFrom: string
+  validTo: string
+  period: string
+}
 
-const handleShowDetail = (row) => {
+const handleShowDetail = (row: TableRow) => {
   router.push(`/warning/${row.id}`)
 }
 
-const handleDelete = (row) => {
+const handleDelete = (row: TableRow) => {
   console.log('Delete warning:', row.id)
+}
+
+const handleDisplay = (row: TableRow) => {
+  console.log('display', row)
 }
 
 const processWarnings = () => {
   warningPolygon.value = []
   liveWarnings.value = warningStore.liveWarnings.map((item) => {
-    const style = setWarningLevelStyle(item.warningLevel)
-    const area = { ...item.area, style }
-    warningPolygon.value.push(area)
+    style.value = setWarningLevelStyle(item.warningLevel)
+    warningPolygon.value.push(item.area)
     return {
       id: item.id,
       weatherType: item.weatherType,
@@ -51,7 +71,7 @@ const processWarnings = () => {
   })
 }
 
-const getRowClass = ({ row }) => {
+const getRowClass = (row: TableRow) => {
   const level = row.warningLevel?.toLowerCase() || ''
   if (level.includes('red')) return 'row-red'
   if (level.includes('amber')) return 'row-amber'
@@ -139,7 +159,7 @@ watch(
                 type="primary"
                 size="small"
                 @click="handleDisplay(scope.row)"
-                >Show Detail
+                >Display
               </el-button>
               <el-button
                 text
@@ -202,6 +222,7 @@ watch(
             v-if="warningPolygon.length > 0"
             :map-id="mapId"
             :locations="warningPolygon"
+            :style="style"
           />
         </div>
       </div>

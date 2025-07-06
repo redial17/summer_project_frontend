@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-const props = defineProps({
-  asset: Object
-})
+import type { AssetTableItem } from '@/types'
+const props = defineProps<{
+  asset: AssetTableItem
+}>()
 const displayData = ref()
 
 if (props.asset) {
@@ -33,15 +34,15 @@ if (props.asset) {
         <h3
           class="asset-title"
           :class="{
-            'warning-low': !props.warningLevel,
-            'warning-medium': props.warningLevel === 'YELLOW',
-            'warning-high': props.warningLevel === 'AMBER',
-            'warning-severe': props.warningLevel === 'RED'
+            'warning-low': props.asset.warningLevel,
+            'warning-medium': props.asset.warningLevel === 'YELLOW',
+            'warning-high': props.asset.warningLevel === 'AMBER',
+            'warning-severe': props.asset.warningLevel === 'RED'
           }"
         >
           {{ asset.name || 'Asset Name' }}
         </h3>
-        <StatusIndicator :status="status" />
+        <StatusIndicator :status="asset.status" />
       </div>
     </template>
 
